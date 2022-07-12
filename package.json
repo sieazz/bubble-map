@@ -1,0 +1,9 @@
+{
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "cytoscape": "^3.22.0"
+  }
+}
