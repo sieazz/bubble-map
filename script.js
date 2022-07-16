@@ -48,24 +48,24 @@ fetch("./model/data.json", { mode: "no-cors" })
             color: "black", // 라벨의 색
           },
         },
-        {
-          selector: "node[type='object']",
-          style: {
-            "background-color": "#a3a3a3",
-          },
-        },
-        {
-          selector: "node[type='skill']",
-          style: {
-            "background-color": "#6e6e6e",
-          },
-        },
-        {
-          selector: "node[type='study']",
-          style: {
-            "background-color": "#3d3c3c",
-          },
-        },
+        // {
+        //   selector: "node[type='object']",
+        //   style: {
+        //     "background-color": "#a3a3a3",
+        //   },
+        // },
+        // {
+        //   selector: "node[type='skill']",
+        //   style: {
+        //     "background-color": "#6e6e6e",
+        //   },
+        // },
+        // {
+        //   selector: "node[type='study']",
+        //   style: {
+        //     "background-color": "#3d3c3c",
+        //   },
+        // },
 
         {
           selector: "edge",
@@ -80,6 +80,7 @@ fetch("./model/data.json", { mode: "no-cors" })
       ],
     });
 
+    // 노드 생성 시 id 자동생성
     let nextID = cy.nodes()[0].id();
     for (let i = 1; i < cy.nodes().length; i++) {
       if (parseInt(nextID) < parseInt(cy.nodes()[i].id())) {
@@ -87,6 +88,33 @@ fetch("./model/data.json", { mode: "no-cors" })
       }
     }
     nextID = String(parseInt(nextID) + 1);
+
+    // data.json 업데이트
+    function updateData(cy) {
+      var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
+      xmlhttp.open("POST", "/");
+      xmlhttp.setRequestHeader("Content-Type", "application/json");
+      xmlhttp.send(JSON.stringify(cy.json().elements));
+    }
+
+    // 특정 오른쪽마우스 창 열기
+    function openPopMenu(popMenuID, x, y) {
+      const popMenu = document.getElementById(popMenuID);
+      popMenu.style.position = "relative";
+      popMenu.style.left = x;
+      popMenu.style.top = y;
+      popMenu.style.display = "block";
+    }
+
+    // 기존에 열여있는 오른쪽마우스 창 전부 닫기
+    function closeEveryPopMenu() {
+      collection = document.getElementsByClassName("list-group");
+      Array.from(collection).map((popMenu) => {
+        popMenu.style.display = "none";
+        popMenu.style.top = null;
+        popMenu.style.left = null;
+      });
+    }
 
     // 모든 node와 edge를 연하게
     function setDimStyle(cy, style) {
@@ -159,13 +187,14 @@ fetch("./model/data.json", { mode: "no-cors" })
     // node를 선택하기 전의 상태로 되돌림
     function setResetFocus(cy) {
       cy.nodes().forEach((e) => {
-        if (e.data().type === "object") {
-          e.style("background-color", "#a3a3a3");
-        } else if (e.data().type === "skill") {
-          e.style("background-color", "#6e6e6e");
-        } else if (e.data().type === "study") {
-          e.style("background-color", "#3d3c3c");
-        }
+        e.style("background-color", nodeColor);
+        // if (e.data().type === "object") {
+        //   e.style("background-color", "#a3a3a3");
+        // } else if (e.data().type === "skill") {
+        //   e.style("background-color", "#6e6e6e");
+        // } else if (e.data().type === "study") {
+        //   e.style("background-color", "#3d3c3c");
+        // }
         e.style("width", nodeSize);
         e.style("height", nodeSize);
         e.style("font-size", fontSize);
@@ -182,12 +211,10 @@ fetch("./model/data.json", { mode: "no-cors" })
       });
     }
 
-    function updateData(cy) {
-      var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
-      xmlhttp.open("POST", "/");
-      xmlhttp.setRequestHeader("Content-Type", "application/json");
-      xmlhttp.send(JSON.stringify(cy.json().elements));
-    }
+    // 오른쪽 마우스 눌렀을 시 팝업 창 닫기
+    cy.on("tapstart cxttapstart", function (event) {
+      closeEveryPopMenu();
+    })
 
     // 노드 클릭 시 url 연결
     cy.on("tap", function (event) {
@@ -235,22 +262,23 @@ fetch("./model/data.json", { mode: "no-cors" })
     });
 
     // 우측 마우스 클릭
-    cy.on("cxttap", "node", function (e) {
-      console.dir(e);
+    cy.on("cxttap", function (e) {
+      closeEveryPopMenu();
       e.originalEvent.preventDefault();
       var x = e.originalEvent.pageX + "px"; // 현재 마우스의 X좌표
       var y = e.originalEvent.pageY + "px"; // 현재 마우스의 Y좌표
 
-      const popMenu = document.getElementById("popMenu"); // 팝업창을 담아옴
-
-      /*
-            스타일 지정, 우클릭 한 위치에 팝업창 띄워줌..
-            */
-      popMenu.style.position = "relative";
-      popMenu.style.left = x;
-      popMenu.style.top = y;
-      popMenu.style.display = "block";
+      if (e.target === cy){
+        openPopMenu("popMenuBackground", x, y);
+      } else {
+        if (e.target.isNode()) {
+          openPopMenu("popMenuNode", x, y);
+        } else if (e.target.isEdge()) {
+          openPopMenu("popMenuEdge", x, y);  
+        }
+      }
     });
+
 
     // layout run
     cy.elements()
@@ -277,13 +305,5 @@ fetch("./model/data.json", { mode: "no-cors" })
           })
           .run();
       }
-    });
-
-    //클릭시 메뉴 숨기기
-    document.addEventListener("click", function (e) {
-      // 노출 초기화
-      popMenu.style.display = "none";
-      popMenu.style.top = null;
-      popMenu.style.left = null;
     });
   });

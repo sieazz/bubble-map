@@ -4,6 +4,8 @@ var app = http.createServer(function (request, response) {
   var url = request.url;
   if (request.url === "/") {
     url = "/index.html";
+
+    // data.json 업데이트
     if (request.method === "POST") {
       var body = "";
       request.on("data", function (data) {
@@ -13,6 +15,7 @@ var app = http.createServer(function (request, response) {
         fs.writeFile("model/data.json", body, "utf8", function (err) {
           response.writeHead(200);
           response.end();
+          return;
         });
       });
     }
