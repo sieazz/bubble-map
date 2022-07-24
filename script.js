@@ -89,6 +89,7 @@ fetch("./model/data.json", { mode: "no-cors" })
     }
     nextID = String(parseInt(nextID) + 1);
 
+
     // data.json 업데이트
     function updateData(cy) {
       var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
@@ -115,6 +116,43 @@ fetch("./model/data.json", { mode: "no-cors" })
         popMenu.style.left = null;
       });
     }
+
+
+    // element 삭제
+    function delElement(cy, ele){
+      cy.remove(ele);
+      run(cy, "cose");
+    }
+
+
+    // node 추가
+    function addNode(cy, name){
+      cy.add([
+        {
+          group: "nodes",
+          data: { id: nextID, label: name },
+        }
+      ]);
+      nextID = String(parseInt(nextID) + 1);
+      run(cy, "cose");
+    }
+
+
+    // edge 추가
+    function addEdge(cy, srcID, destID){
+      cy.add([
+        {
+          group: "edges",
+          data: { 
+                  id: `${srcID}->${destID}`,
+                  source: srcID,
+                  target: destID
+                },
+        }
+      ]);
+      run(cy, "cose");
+    }
+
 
     // 모든 node와 edge를 연하게
     function setDimStyle(cy, style) {
@@ -211,7 +249,19 @@ fetch("./model/data.json", { mode: "no-cors" })
       });
     }
 
-    // 오른쪽 마우스 눌렀을 시 팝업 창 닫기
+    // 그래프 띄우기
+    function run(cy, layoutName){
+      cy.elements()
+      .layout({
+        name: layoutName,
+      })
+      .run();
+    }
+
+
+
+
+    // 왼쪽/오른쪽 마우스 눌렀을 시 팝업 창 닫기
     cy.on("tapstart cxttapstart", function (event) {
       closeEveryPopMenu();
     })
@@ -225,14 +275,13 @@ fetch("./model/data.json", { mode: "no-cors" })
     });
 
     // 노드 위로 마우스 올렸을 때 채색
-    cy.on("tapstart mouseover", "node", function (e) {
+    cy.on("mouseover", "node", function (e) {
       setDimStyle(cy, {
         "background-color": dimColor,
         "line-color": dimColor,
         "target-arrow-color": dimColor,
         color: dimColor,
       });
-
       setFocus(
         e.target,
         successorColor,
@@ -247,19 +296,6 @@ fetch("./model/data.json", { mode: "no-cors" })
       setResetFocus(e.cy);
     });
 
-    // 노드삭제
-    cy.on("dblclick", "node", function (e) {
-      if (cy.nodes().length > 1) {
-        cy.remove(e.target);
-      }
-      cy.elements()
-        .layout({
-          name: "cose",
-        })
-        .run();
-
-      updateData(cy);
-    });
 
     // 우측 마우스 클릭
     cy.on("cxttap", function (e) {
@@ -267,25 +303,80 @@ fetch("./model/data.json", { mode: "no-cors" })
       e.originalEvent.preventDefault();
       var x = e.originalEvent.pageX + "px"; // 현재 마우스의 X좌표
       var y = e.originalEvent.pageY + "px"; // 현재 마우스의 Y좌표
-
+     
       if (e.target === cy){
         openPopMenu("popMenuBackground", x, y);
+
+        // 정점 생성
+        document.getElementById("addNode").onclick = function() {
+          var name = prompt("Enter a node name:", String(nextID));
+          if (name) addNode(cy, name);
+          closeEveryPopMenu();
+        };
+
+        // 그래프 저장
+        document.getElementById("updateGraph").onclick = function() {
+          updateData(cy);
+          closeEveryPopMenu();
+        };
       } else {
         if (e.target.isNode()) {
           openPopMenu("popMenuNode", x, y);
+          document.querySelector("#popMenuNode div").innerText = `ID: ${e.target.id()}`;
+          
+          // 이름 변경
+          document.getElementById("changeNodeName").onclick = function() {
+            var name = prompt("Enter a new node name:", e.target.data("label"));
+            if (name) e.target.data("label", name);
+            closeEveryPopMenu();
+          };
+
+          // 정점 삭제
+          document.getElementById("delNode").onclick = function() {
+            delElement(cy, e.target);
+            closeEveryPopMenu();
+          };
+
+          // 이 정점을 dest로 하는 정점 설정
+          document.getElementById("setDestNode").onclick = function() {
+            var srcID = prompt("Enter the src node ID:");
+            if (cy.getElementById(srcID).isNode()) addEdge(cy, srcID, e.target.id());
+            closeEveryPopMenu();
+          };
+
+          // 이 정점을 src로 하는 정점 설정
+          document.getElementById("setSrcNode").onclick = function() {
+            var destID = prompt("Enter the dest node ID:");
+            if (cy.getElementById(destID).isNode()) addEdge(cy, e.target.id(), destID);
+            closeEveryPopMenu();
+          };
+
         } else if (e.target.isEdge()) {
-          openPopMenu("popMenuEdge", x, y);  
+          openPopMenu("popMenuEdge", x, y);
+          document.querySelector("#popMenuEdge div").innerText = `ID: ${e.target.id()}`;
+
+          // 간선 삭제
+          document.getElementById("delEdge").onclick = function() {
+            delElement(cy, e.target);
+            closeEveryPopMenu();
+          };
         }
       }
     });
 
 
+
+    // 레이아웃 재배치
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "r" || event.key === "R") {
+        run(cy, "cose");
+      }
+    });
+
+
+
     // layout run
-    cy.elements()
-      .layout({
-        name: "cose",
-      })
-      .run();
+    run(cy, "cose");
 
     // 창 크기 변경 시
     let resizeTimer;
@@ -294,16 +385,5 @@ fetch("./model/data.json", { mode: "no-cors" })
       resizeTimer = this.setTimeout(function () {
         cy.fit();
       }, 200);
-    });
-
-    // 레이아웃 재배치
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "r" || event.key === "R") {
-        cy.elements()
-          .layout({
-            name: "cose",
-          })
-          .run();
-      }
     });
   });
