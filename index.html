@@ -1,73 +1,70 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-      crossorigin="anonymous"
-    />
-    <title>그래프</title>
-  </head>
 
-  <body>
-    <div id="cy"></div>
-    
-    <!-- 팝업창 -->
-    <div id="popMenuNode" class="list-group" style="display: none; width: 300px">
-      <div
-        class="list-group-item list-group-item-action active"
-        aria-current="true"
-      >
-        우클릭 메뉴
-      </div>
-      <button type="button" id="changeNodeName" class="list-group-item list-group-item-action">
-        이름 변경
-      </button>
-      <button type="button" id="delNode" class="list-group-item list-group-item-action">
-        정점 삭제
-      </button>
-      <button type="button" id="setDestNode" class="list-group-item list-group-item-action">
-        이 정점를 dest로 하는 정점 설정
-      </button>
-      <button type="button" id="setSrcNode" class="list-group-item list-group-item-action">
-        이 정점를 src로 하는 정점 설정
-      </button>
-      <!-- <a class="list-group-item list-group-item-action disabled">마우스</a> -->
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+  <title>그래프</title>
+</head>
+
+<body>
+  <div id="cy"></div>
+
+  <!-- 팝업창 -->
+  <div id="popMenuNode" class="list-group" style="display: none; width: 300px">
+    <div class="list-group-item list-group-item-action active" aria-current="true">
+      우클릭 메뉴
     </div>
-
-    <div id="popMenuEdge" class="list-group" style="display: none; width: 300px">
-      <div
-        class="list-group-item list-group-item-action active"
-        aria-current="true"
-      >
-        그래프 메뉴
+    <div class="list-group-item" id="urlbox">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Set URL Here">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" type="button">Apply</button>
+        </div>
       </div>
-      <button type="button" id="delEdge" class="list-group-item list-group-item-action">
-        간선 삭제
-      </button>
     </div>
+    <button type="button" id="changeNodeName" class="list-group-item list-group-item-action">
+      이름 변경
+    </button>
+    <button type="button" id="delNode" class="list-group-item list-group-item-action">
+      정점 삭제
+    </button>
+    <button type="button" id="setDestNode" class="list-group-item list-group-item-action">
+      이 정점을 dest로 하는 간선 생성
+    </button>
+    <button type="button" id="setSrcNode" class="list-group-item list-group-item-action">
+      이 정점을 src로 하는 간선 생성
+    </button>
+    <!-- <a class="list-group-item list-group-item-action disabled">마우스</a> -->
+  </div>
 
-    <div id="popMenuBackground" class="list-group" style="display: none; width: 300px">
-      <div
-        class="list-group-item list-group-item-action active"
-        aria-current="true"
-      >
-        우클릭 메뉴
-      </div>
-      <button type="button" id="addNode" class="list-group-item list-group-item-action">
-        정점 생성
-      </button>
-      <button type="button" id="updateGraph" class="list-group-item list-group-item-action">
-        그래프 저장
-      </button>
+  <div id="popMenuEdge" class="list-group" style="display: none; width: 300px">
+    <div class="list-group-item list-group-item-action active" aria-current="true">
+      그래프 메뉴
     </div>
+    <button type="button" id="delEdge" class="list-group-item list-group-item-action">
+      간선 삭제
+    </button>
+  </div>
 
-    <script src="./bundle.js"></script>
-    <script src="./script.js"></script>
-  </body>
+  <div id="popMenuBackground" class="list-group" style="display: none; width: 300px">
+    <div class="list-group-item list-group-item-action active" aria-current="true">
+      우클릭 메뉴
+    </div>
+    <button type="button" id="addNode" class="list-group-item list-group-item-action">
+      정점 생성
+    </button>
+    <button type="button" id="updateGraph" class="list-group-item list-group-item-action">
+      그래프 저장
+    </button>
+  </div>
+
+  <script src="./bundle.js"></script>
+  <script src="./script.js"></script>
+</body>
+
 </html>

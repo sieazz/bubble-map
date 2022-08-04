@@ -11,7 +11,7 @@ fetch("./model/data.json", { mode: "no-cors" })
 
     // edge & arrow 크기값
     const edgeWidth = "2px";
-    var edgeActiveWidth = "3px";
+    const edgeActiveWidth = "3px";
     const arrowScale = 0.7;
     const arrowActiveScale = 0.9;
 
@@ -70,7 +70,7 @@ fetch("./model/data.json", { mode: "no-cors" })
         {
           selector: "edge",
           style: {
-            width: 3,
+            width: edgeWidth,
             "line-color": edgeColor,
             "target-arrow-color": edgeColor,
             "curve-style": "bezier",
@@ -119,14 +119,14 @@ fetch("./model/data.json", { mode: "no-cors" })
 
 
     // element 삭제
-    function delElement(cy, ele){
+    function delElement(cy, ele) {
       cy.remove(ele);
       run(cy, "cose");
     }
 
 
     // node 추가
-    function addNode(cy, name){
+    function addNode(cy, name) {
       cy.add([
         {
           group: "nodes",
@@ -139,15 +139,15 @@ fetch("./model/data.json", { mode: "no-cors" })
 
 
     // edge 추가
-    function addEdge(cy, srcID, destID){
+    function addEdge(cy, srcID, destID) {
       cy.add([
         {
           group: "edges",
-          data: { 
-                  id: `${srcID}->${destID}`,
-                  source: srcID,
-                  target: destID
-                },
+          data: {
+            id: `${srcID}->${destID}`,
+            source: srcID,
+            target: destID
+          },
         }
       ]);
       run(cy, "cose");
@@ -250,12 +250,12 @@ fetch("./model/data.json", { mode: "no-cors" })
     }
 
     // 그래프 띄우기
-    function run(cy, layoutName){
+    function run(cy, layoutName) {
       cy.elements()
-      .layout({
-        name: layoutName,
-      })
-      .run();
+        .layout({
+          name: layoutName,
+        })
+        .run();
     }
 
 
@@ -268,8 +268,12 @@ fetch("./model/data.json", { mode: "no-cors" })
 
     // 노드 클릭 시 url 연결
     cy.on("tap", function (event) {
-      const url = event.target.data("url");
+      let url = event.target.data("url");
+
       if (url && url !== "") {
+        if (!url.match(/^https?:\/\//i)) {
+          url = 'https://' + url;
+        }
         window.open(url);
       }
     });
@@ -303,19 +307,19 @@ fetch("./model/data.json", { mode: "no-cors" })
       e.originalEvent.preventDefault();
       var x = e.originalEvent.pageX + "px"; // 현재 마우스의 X좌표
       var y = e.originalEvent.pageY + "px"; // 현재 마우스의 Y좌표
-     
-      if (e.target === cy){
+
+      if (e.target === cy) {
         openPopMenu("popMenuBackground", x, y);
 
         // 정점 생성
-        document.getElementById("addNode").onclick = function() {
+        document.getElementById("addNode").onclick = function () {
           var name = prompt("Enter a node name:", String(nextID));
           if (name) addNode(cy, name);
           closeEveryPopMenu();
         };
 
         // 그래프 저장
-        document.getElementById("updateGraph").onclick = function() {
+        document.getElementById("updateGraph").onclick = function () {
           updateData(cy);
           closeEveryPopMenu();
         };
@@ -323,29 +327,40 @@ fetch("./model/data.json", { mode: "no-cors" })
         if (e.target.isNode()) {
           openPopMenu("popMenuNode", x, y);
           document.querySelector("#popMenuNode div").innerText = `ID: ${e.target.id()}`;
-          
+
+          if (e.target.data("url") && e.target.data("url") !== "") {
+            document.querySelector("#urlbox input").value = e.target.data("url");
+          } else {
+            document.querySelector("#urlbox input").value = ""
+          }
+
+          // URL 지정 및 변경
+          document.querySelector("#urlbox button").onclick = function () {
+            e.target.data("url", document.querySelector("#urlbox input").value);
+          }
+
           // 이름 변경
-          document.getElementById("changeNodeName").onclick = function() {
+          document.getElementById("changeNodeName").onclick = function () {
             var name = prompt("Enter a new node name:", e.target.data("label"));
             if (name) e.target.data("label", name);
             closeEveryPopMenu();
           };
 
           // 정점 삭제
-          document.getElementById("delNode").onclick = function() {
+          document.getElementById("delNode").onclick = function () {
             delElement(cy, e.target);
             closeEveryPopMenu();
           };
 
-          // 이 정점을 dest로 하는 정점 설정
-          document.getElementById("setDestNode").onclick = function() {
+          // 이 정점을 dest로 하는 간선 생성
+          document.getElementById("setDestNode").onclick = function () {
             var srcID = prompt("Enter the src node ID:");
             if (cy.getElementById(srcID).isNode()) addEdge(cy, srcID, e.target.id());
             closeEveryPopMenu();
           };
 
-          // 이 정점을 src로 하는 정점 설정
-          document.getElementById("setSrcNode").onclick = function() {
+          // 이 정점을 src로 하는 간선 생성
+          document.getElementById("setSrcNode").onclick = function () {
             var destID = prompt("Enter the dest node ID:");
             if (cy.getElementById(destID).isNode()) addEdge(cy, e.target.id(), destID);
             closeEveryPopMenu();
@@ -356,7 +371,7 @@ fetch("./model/data.json", { mode: "no-cors" })
           document.querySelector("#popMenuEdge div").innerText = `ID: ${e.target.id()}`;
 
           // 간선 삭제
-          document.getElementById("delEdge").onclick = function() {
+          document.getElementById("delEdge").onclick = function () {
             delElement(cy, e.target);
             closeEveryPopMenu();
           };
