@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -11,7 +11,7 @@
       integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
       crossorigin="anonymous"
     />
-    <title></title>
+    <title>그래프</title>
   </head>
 
   <body>
@@ -25,16 +25,16 @@
       >
         우클릭 메뉴
       </div>
-      <button class="list-group-item list-group-item-action">
+      <button type="button" id="changeNodeName" class="list-group-item list-group-item-action">
         이름 변경
       </button>
-      <button class="list-group-item list-group-item-action">
+      <button type="button" id="delNode" class="list-group-item list-group-item-action">
         정점 삭제
       </button>
-      <button class="list-group-item list-group-item-action">
+      <button type="button" id="setDestNode" class="list-group-item list-group-item-action">
         이 정점를 dest로 하는 정점 설정
       </button>
-      <button class="list-group-item list-group-item-action">
+      <button type="button" id="setSrcNode" class="list-group-item list-group-item-action">
         이 정점를 src로 하는 정점 설정
       </button>
       <!-- <a class="list-group-item list-group-item-action disabled">마우스</a> -->
@@ -45,12 +45,11 @@
         class="list-group-item list-group-item-action active"
         aria-current="true"
       >
-        우클릭 메뉴
+        그래프 메뉴
       </div>
-      <button class="list-group-item list-group-item-action">
+      <button type="button" id="delEdge" class="list-group-item list-group-item-action">
         간선 삭제
       </button>
-      <!-- <a class="list-group-item list-group-item-action disabled">마우스</a> -->
     </div>
 
     <div id="popMenuBackground" class="list-group" style="display: none; width: 300px">
@@ -60,10 +59,12 @@
       >
         우클릭 메뉴
       </div>
-      <button class="list-group-item list-group-item-action">
+      <button type="button" id="addNode" class="list-group-item list-group-item-action">
         정점 생성
       </button>
-      <!-- <a class="list-group-item list-group-item-action disabled">마우스</a> -->
+      <button type="button" id="updateGraph" class="list-group-item list-group-item-action">
+        그래프 저장
+      </button>
     </div>
 
     <script src="./bundle.js"></script>
