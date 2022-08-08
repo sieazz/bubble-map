@@ -81,13 +81,16 @@ fetch("./model/data.json", { mode: "no-cors" })
     });
 
     // 노드 생성 시 id 자동생성
-    let nextID = cy.nodes()[0].id();
-    for (let i = 1; i < cy.nodes().length; i++) {
-      if (parseInt(nextID) < parseInt(cy.nodes()[i].id())) {
-        nextID = cy.nodes()[i].id();
+    let nextID = "0"
+    if (cy.nodes()[0]) {
+      nextID = cy.nodes()[0].id();
+      for (let i = 1; i < cy.nodes().length; i++) {
+        if (parseInt(nextID) < parseInt(cy.nodes()[i].id())) {
+          nextID = cy.nodes()[i].id();
+        }
       }
+      nextID = String(parseInt(nextID) + 1);
     }
-    nextID = String(parseInt(nextID) + 1);
 
 
     // data.json 업데이트
