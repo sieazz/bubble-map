@@ -93,12 +93,28 @@ fetch("./model/data.json", { mode: "no-cors" })
     }
 
 
+    // 비밀번호 입력받기
+    function login(password){
+      var xhr = new XMLHttpRequest(); // new HttpRequest instance
+      xhr.open("POST", "/");
+      xhr.setRequestHeader("Content-Type", "text/plain");
+      xhr.responseType = 'text';
+      xhr.onload = () => {
+        if (xhr.readyState === xhr.DONE) {
+          if (xhr.status === 200) {
+            return JSON.parse(xhr.responseText);
+          }
+        }
+      };
+      xhr.send(password);
+    }
+
     // data.json 업데이트
     function updateData(cy) {
-      var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance
-      xmlhttp.open("POST", "/");
-      xmlhttp.setRequestHeader("Content-Type", "application/json");
-      xmlhttp.send(JSON.stringify(cy.json().elements));
+      var xhr = new XMLHttpRequest(); // new HttpRequest instance
+      xhr.open("POST", "/");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.send(JSON.stringify(cy.json().elements));
     }
 
     // 특정 오른쪽마우스 창 열기
@@ -323,6 +339,8 @@ fetch("./model/data.json", { mode: "no-cors" })
 
         // 그래프 저장
         document.getElementById("updateGraph").onclick = function () {
+          let result = login(prompt("Enter password:"));
+          console.log(result);
           updateData(cy);
           closeEveryPopMenu();
         };
