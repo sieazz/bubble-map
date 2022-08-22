@@ -1,3 +1,7 @@
+import { openPopMenu, closeEveryPopMenu, delElement, addNode, addEdge } from './user-control.js';
+import { authorize, updateData } from './post-request.js';
+
+
 fetch("./model/data.json", { mode: "no-cors" })
   .then(function (response) {
     return response.json();
@@ -23,6 +27,8 @@ fetch("./model/data.json", { mode: "no-cors" })
     const successorColor = "#1ed9c9";
     const predecessorsColor = "#dec33c";
     const cycleColor = "#9f73ff";
+
+    const layoutName = "cose";
 
     const cy = cytoscape({
       container: document.getElementById("cy"), // container to render in
@@ -92,87 +98,13 @@ fetch("./model/data.json", { mode: "no-cors" })
       nextID = String(parseInt(nextID) + 1);
     }
 
-
-    // 비밀번호 입력받기
-    function login(password){
-      return new Promise((resolve, reject) => {
-        var xhr = new XMLHttpRequest(); // new HttpRequest instance
-        xhr.open("POST", "/");
-        xhr.setRequestHeader("Content-Type", "text/plain");
-        xhr.responseType = 'text';
-        xhr.onload = () => {
-          if (xhr.readyState === xhr.DONE) {
-            if (xhr.status === 200) {
-              resolve(JSON.parse(xhr.responseText));
-            }
-          }
-        };
-        xhr.send(password);
-      })
-    }
-
-    // data.json 업데이트
-    function updateData(cy) {
-      var xhr = new XMLHttpRequest(); // new HttpRequest instance
-      xhr.open("POST", "/");
-      xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.send(JSON.stringify(cy.json().elements));
-    }
-
-    // 특정 오른쪽마우스 창 열기
-    function openPopMenu(popMenuID, x, y) {
-      const popMenu = document.getElementById(popMenuID);
-      popMenu.style.position = "relative";
-      popMenu.style.left = x;
-      popMenu.style.top = y;
-      popMenu.style.display = "block";
-    }
-
-    // 기존에 열여있는 오른쪽마우스 창 전부 닫기
-    function closeEveryPopMenu() {
-      collection = document.getElementsByClassName("list-group");
-      Array.from(collection).map((popMenu) => {
-        popMenu.style.display = "none";
-        popMenu.style.top = null;
-        popMenu.style.left = null;
-      });
-    }
-
-
-    // element 삭제
-    function delElement(cy, ele) {
-      cy.remove(ele);
-      run(cy, "cose");
-    }
-
-
-    // node 추가
-    function addNode(cy, name) {
-      cy.add([
-        {
-          group: "nodes",
-          data: { id: nextID, label: name },
-        }
-      ]);
+    function get_and_renew_id() {
+      const returnID = String(parseInt(nextID));
       nextID = String(parseInt(nextID) + 1);
-      run(cy, "cose");
+      return returnID;
     }
 
 
-    // edge 추가
-    function addEdge(cy, srcID, destID) {
-      cy.add([
-        {
-          group: "edges",
-          data: {
-            id: `${srcID}->${destID}`,
-            source: srcID,
-            target: destID
-          },
-        }
-      ]);
-      run(cy, "cose");
-    }
 
 
     // 모든 node와 edge를 연하게
@@ -326,24 +258,25 @@ fetch("./model/data.json", { mode: "no-cors" })
     cy.on("cxttap", function (e) {
       closeEveryPopMenu();
       e.originalEvent.preventDefault();
-      var x = e.originalEvent.pageX + "px"; // 현재 마우스의 X좌표
-      var y = e.originalEvent.pageY + "px"; // 현재 마우스의 Y좌표
+      const x = e.originalEvent.pageX + "px"; // 현재 마우스의 X좌표
+      const y = e.originalEvent.pageY + "px"; // 현재 마우스의 Y좌표
 
       if (e.target === cy) {
         openPopMenu("popMenuBackground", x, y);
 
         // 정점 생성
         document.getElementById("addNode").onclick = function () {
-          var name = prompt("Enter a node name:", String(nextID));
-          if (name) addNode(cy, name);
+          const name = prompt("Enter a node name:", String(nextID));
+          if (name) addNode(cy, name, get_and_renew_id);
+          run(cy, layoutName);
           closeEveryPopMenu();
         };
 
         // 그래프 저장
         document.getElementById("updateGraph").onclick = function () {
-          login(prompt("Enter password:")).then( (result) => {
-            if (result) { 
-              updateData(cy); 
+          authorize(prompt("Enter password:")).then((result) => {
+            if (result) {
+              updateData(cy);
             } else {
               alert("Wrong password")
             }
@@ -368,7 +301,7 @@ fetch("./model/data.json", { mode: "no-cors" })
 
           // 이름 변경
           document.getElementById("changeNodeName").onclick = function () {
-            var name = prompt("Enter a new node name:", e.target.data("label"));
+            const name = prompt("Enter a new node name:", e.target.data("label"));
             if (name) e.target.data("label", name);
             closeEveryPopMenu();
           };
@@ -376,20 +309,23 @@ fetch("./model/data.json", { mode: "no-cors" })
           // 정점 삭제
           document.getElementById("delNode").onclick = function () {
             delElement(cy, e.target);
+            run(cy, layoutName);
             closeEveryPopMenu();
           };
 
           // 이 정점을 dest로 하는 간선 생성
           document.getElementById("setDestNode").onclick = function () {
-            var srcID = prompt("Enter the src node ID:");
+            const srcID = prompt("Enter the src node ID:");
             if (cy.getElementById(srcID).isNode()) addEdge(cy, srcID, e.target.id());
+            run(cy, layoutName);
             closeEveryPopMenu();
           };
 
           // 이 정점을 src로 하는 간선 생성
           document.getElementById("setSrcNode").onclick = function () {
-            var destID = prompt("Enter the dest node ID:");
+            const destID = prompt("Enter the dest node ID:");
             if (cy.getElementById(destID).isNode()) addEdge(cy, e.target.id(), destID);
+            run(cy, layoutName);
             closeEveryPopMenu();
           };
 
@@ -400,6 +336,7 @@ fetch("./model/data.json", { mode: "no-cors" })
           // 간선 삭제
           document.getElementById("delEdge").onclick = function () {
             delElement(cy, e.target);
+            run(cy, layoutName);
             closeEveryPopMenu();
           };
         }
@@ -411,14 +348,15 @@ fetch("./model/data.json", { mode: "no-cors" })
     // 레이아웃 재배치
     document.addEventListener("keydown", (event) => {
       if (event.key === "r" || event.key === "R") {
-        run(cy, "cose");
+        run(cy, layoutName);
       }
     });
 
 
 
     // layout run
-    run(cy, "cose");
+    run(cy, layoutName);
+
 
     // 창 크기 변경 시
     let resizeTimer;
